@@ -3,7 +3,6 @@ import { GuildMember } from 'discord.js';
 import Log from '../../utils/Log';
 import {
 	createOAuthAppAuth,
-	createOAuthUserAuth,
 } from '@octokit/auth-oauth-app';
 import apiKeys from '../constants/apiKeys';
 import {
@@ -28,12 +27,14 @@ export type VerifiedGithub = {
 	id: number,
 	email: string,
 	username: string,
+	profileUrl: string,
+	avatarUrl: string,
 };
 
 const VerifyGithub = async (ctx: CommandContext, guildMember: GuildMember): Promise<void> => {
 	Log.debug('starting to verify github account link');
 	
-	const isDmOn: boolean = await ServiceUtils.tryDMUser(guildMember, 'Attempting to verify github account!');
+	const isDmOn: boolean = await ServiceUtils.tryDMUser(guildMember, 'Attempting to verify account!');
 	
 	await ctx.defer(true);
 	
@@ -48,6 +49,7 @@ const VerifyGithub = async (ctx: CommandContext, guildMember: GuildMember): Prom
 		
 		if (verifiedGithub) {
 			Log.info('found existing verified github account');
+			await displayGithubAccount(guildMember, verifiedGithub);
 			return;
 		}
 		
@@ -70,6 +72,7 @@ const VerifyGithub = async (ctx: CommandContext, guildMember: GuildMember): Prom
 		await linkGithubAccount(guildMember, verifiedGithub);
 		
 		Log.debug('finished verifying github slash command');
+		await displayGithubAccount(guildMember, verifiedGithub);
 	} catch (e) {
 		Log.error('failed to authenticate user', e);
 		await ctx.send({ content: 'Please try authentication again.', ephemeral: true });
@@ -137,11 +140,33 @@ export const retrieveVerifiedGithub = async (guildMember: GuildMember, accessTok
 			id: userResult.data.id,
 			email: userResult.data.email,
 			username: userResult.data.login,
+			profileUrl: userResult.data.html_url,
+			avatarUrl: userResult.data.avatar_url,
 		};
 	} catch (e) {
 		Log.error('failed to authenticate github user', e);
 	}
 	return null;
+};
+
+const displayGithubAccount = async (guildMember: GuildMember, githubAccount: VerifiedGithub) => {
+	await guildMember.send({
+		embeds: [{
+			title: 'Github Account Verification',
+			description: 'Details regarding your account.',
+			fields: [
+				{ name: 'ID', value: `${githubAccount.id}` },
+				{ name: 'Username', value: `${githubAccount.username}` },
+				{ name: 'Email', value: `${githubAccount.email}` },
+				{ name: 'Profile', value: `${githubAccount.profileUrl}` },
+			],
+			url: `${githubAccount.profileUrl}`,
+			author: {
+				name: `${githubAccount.username}`,
+				iconURL: `${githubAccount.avatarUrl}`,
+			},
+		}],
+	});
 };
 
 export default VerifyGithub;

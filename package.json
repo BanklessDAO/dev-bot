@@ -1,7 +1,7 @@
 {
-    "name": "project-name-here",
+    "name": "dev-bot",
     "version": "1.0.0",
-    "description": "description here",
+    "description": "DevOps and utility bot for github, vercel, and other platforms",
     "main": "app.js",
     "private": true,
     "scripts": {

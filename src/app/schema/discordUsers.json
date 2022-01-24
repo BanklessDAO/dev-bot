@@ -1,0 +1,33 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "userId",
+      "tag"
+    ],
+    "properties": {
+      "userId": {
+        "bsonType": ["string"],
+        "description": "Discord Id of the user that is configured to use this command."
+      },
+      "tag": {
+        "bsonType": ["string"],
+        "description": "Discord handle of the user that is configured to use this command."
+      },
+      "github": {
+        "bsonType": ["null", "object"],
+        "description": "Github account details",
+        "properties": {
+          "id": {
+            "bsonType": ["number"],
+            "description": "Github identifier"
+          },
+          "accessToken": {
+            "bsonType": ["string"],
+            "description": "github user access token"
+          }
+        }
+      }
+    }
+  }
+}

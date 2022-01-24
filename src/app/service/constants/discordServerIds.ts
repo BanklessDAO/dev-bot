@@ -1,4 +1,4 @@
-// TODO: fill out discordServerId
 export default Object.freeze({
-	banklessDAO: 'discord-server-id-here',
+	banklessDAO: '834499078434979890',
+	slinkypotatoe: '850840267082563596',
 });

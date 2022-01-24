@@ -16,7 +16,7 @@ export default class implements DiscordEvent {
 			client.guilds.cache.forEach((guild: Guild) => {
 				Log.info(`Bot is active for: ${guild.id}, ${guild.name}`);
 			});
-			await MongoDbUtils.connect(constants.DB_NAME_DEGEN);
+			await MongoDbUtils.connect(constants.DB_NAME);
 			
 			Log.info('Bot is ready!');
 		} catch (e) {

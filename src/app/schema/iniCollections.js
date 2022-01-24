@@ -1,0 +1,1 @@
+db.discordUsers.createIndex({ userId: 1 }, { unique: true });

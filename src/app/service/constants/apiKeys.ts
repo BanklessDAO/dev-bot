@@ -6,6 +6,9 @@ const apiKeys = Object.freeze({
 	logDNADefault: process.env.LOGDNA_DEFAULT_LEVEL,
 	
 	sentryDSN: process.env.SENTRY_IO_DSN,
+	
+	GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+	GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
 });
 
 export default apiKeys;

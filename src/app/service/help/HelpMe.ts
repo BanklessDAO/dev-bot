@@ -13,7 +13,7 @@ export default (): MessageOptions => {
 				},
 				{
 					name: '-> Useful Links',
-					value: '[BanklessDAO Product Support Center invite](https://discord.gg/85Kb6Qv6gd)\n',
+					value: '[BanklessDAO Product Support Center](https://discord.gg/85Kb6Qv6gd)\n',
 					inline: false,
 				},
 			],

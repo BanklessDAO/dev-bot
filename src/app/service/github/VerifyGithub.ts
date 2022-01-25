@@ -130,7 +130,7 @@ export const retrieveVerifiedGithub = async (guildMember: GuildMember, accessTok
 			auth: accessToken,
 		});
 		
-		const userResult = await appOctokit.users.getAuthenticated();
+		const userResult = await appOctokit.rest.users.getAuthenticated();
 		
 		Log.debug('called authenticated user from API');
 		Log.debug(userResult);
@@ -157,7 +157,6 @@ const displayGithubAccount = async (guildMember: GuildMember, githubAccount: Ver
 			fields: [
 				{ name: 'ID', value: `${githubAccount.id}` },
 				{ name: 'Username', value: `${githubAccount.username}` },
-				{ name: 'Email', value: `${githubAccount.email}` },
 				{ name: 'Profile', value: `${githubAccount.profileUrl}` },
 			],
 			url: `${githubAccount.profileUrl}`,

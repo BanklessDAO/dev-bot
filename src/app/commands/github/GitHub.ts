@@ -8,6 +8,7 @@ import Log, { LogUtils } from '../../utils/Log';
 import discordServerIds from '../../service/constants/discordServerIds';
 import VerifyGithub from '../../service/github/VerifyGithub';
 import ServiceUtils from '../../utils/ServiceUtils';
+import JoinGithubOrg from '../../service/github/JoinGithubOrg';
 
 export default class Help extends SlashCommand {
 	constructor(creator: SlashCreator) {
@@ -19,6 +20,11 @@ export default class Help extends SlashCommand {
 					name: 'verify',
 					type: CommandOptionType.SUB_COMMAND,
 					description: 'Verify your github login.',
+				},
+				{
+					name: 'join',
+					type: CommandOptionType.SUB_COMMAND,
+					description: 'Join the Github Organization.',
 				},
 			],
 			throttling: {
@@ -40,6 +46,9 @@ export default class Help extends SlashCommand {
 			switch (ctx.subcommands[0]) {
 			case 'verify':
 				await VerifyGithub(ctx, guildMember);
+				break;
+			case 'join':
+				await JoinGithubOrg(ctx, guildMember);
 				break;
 			default:
 				await ctx.send({ content: 'Please try another command' }).catch(Log.error);

@@ -1,5 +1,10 @@
 import { CommandContext } from 'slash-create';
-import { GuildMember } from 'discord.js';
+import {
+	GuildMember,
+	Message,
+	MessageActionRow,
+	MessageButton,
+} from 'discord.js';
 import Log from '../../utils/Log';
 import {
 	createOAuthAppAuth,
@@ -15,12 +20,14 @@ import { OAuthAppAuthentication } from '@octokit/oauth-methods/dist-types/types'
 import {
 	Collection,
 	Db,
+	DeleteResult,
 	ModifyResult,
 } from 'mongodb';
 import MongoDbUtils from '../../utils/MongoDbUtils';
 import constants from '../constants/constants';
 import { DiscordUserCollection } from '../../types/mongodb/DiscordUserCollection';
 import { Octokit } from '@octokit/rest';
+import buttonIds from '../constants/buttonIds';
 
 export type VerifiedGithub = {
 	accessToken: string,
@@ -50,6 +57,7 @@ const VerifyGithub = async (ctx: CommandContext, guildMember: GuildMember): Prom
 		if (verifiedGithub) {
 			Log.info('found existing verified github account');
 			await displayGithubAccount(guildMember, verifiedGithub);
+			await askUnlinkGithubAccount(guildMember);
 			return;
 		}
 		
@@ -66,7 +74,8 @@ const VerifyGithub = async (ctx: CommandContext, guildMember: GuildMember): Prom
 				Log.debug(verification);
 			},
 		};
-	
+		Log.debug('code entered on github page');
+		
 		const userAuthenticationFromDeviceFlow: OAuthAppAuthentication = await auth(options);
 		verifiedGithub = await retrieveVerifiedGithub(guildMember, userAuthenticationFromDeviceFlow.token);
 		await linkGithubAccount(guildMember, verifiedGithub);
@@ -132,8 +141,8 @@ export const retrieveVerifiedGithub = async (guildMember: GuildMember, accessTok
 		
 		const userResult = await appOctokit.rest.users.getAuthenticated();
 		
-		Log.debug('called authenticated user from API');
-		Log.debug(userResult);
+		Log.debug(`called authenticated user from API, githubID: ${userResult.data.id}, login: ${userResult.data.login}`);
+		// Log.debug(userResult);
 		
 		return {
 			accessToken: accessToken,
@@ -165,6 +174,50 @@ const displayGithubAccount = async (guildMember: GuildMember, githubAccount: Ver
 				iconURL: `${githubAccount.avatarUrl}`,
 			},
 		}],
+	});
+};
+const askUnlinkGithubAccount = async (guildMember: GuildMember) => {
+	const message: Message = await guildMember.send({
+		content: 'Unlink/Remove github account?',
+		components: [
+			new MessageActionRow().addComponents(
+				new MessageButton()
+					.setCustomId(buttonIds.GITHUB_ACCOUNT_UNLINK_APPROVE)
+					.setLabel('Yes')
+					.setStyle('SUCCESS'),
+				new MessageButton()
+					.setCustomId(buttonIds.GITHUB_ACCOUNT_UNLINK_REJECT)
+					.setLabel('No')
+					.setStyle('DANGER'),
+			),
+		],
+	});
+	await message.awaitMessageComponent({
+		time: 600_000,
+		filter: args => (args.customId == buttonIds.GITHUB_ACCOUNT_UNLINK_APPROVE || args.customId == buttonIds.GITHUB_ACCOUNT_UNLINK_REJECT)
+			&& args.user.id == guildMember.id.toString(),
+	}).then(async (interaction) => {
+		if (interaction.customId == buttonIds.GITHUB_ACCOUNT_UNLINK_APPROVE) {
+			const db: Db = await MongoDbUtils.connect(constants.DB_NAME);
+			const accountsCollection: Collection<DiscordUserCollection> = db.collection(constants.DB_COLLECTION_DISCORD_USERS);
+			
+			Log.debug('looking for discord auth account');
+			const result: DeleteResult = await accountsCollection.deleteOne({
+				userId: guildMember.id.toString(),
+			});
+			if (result.deletedCount == 1) {
+				Log.debug(`github account deleted for ${guildMember.id}`);
+				await guildMember.send({ content: 'Github account removed!' });
+			} else {
+				Log.warn(`could not find github account to delete for ${guildMember.id}`);
+			}
+		} else if (interaction.customId == buttonIds.GITHUB_ACCOUNT_UNLINK_REJECT) {
+			await guildMember.send({ content: 'You got it!' });
+		}
+	}).catch(error => {
+		Log.error(error);
+	}).finally(() => {
+		message.edit({ components: [] }).catch(Log.error);
 	});
 };
 

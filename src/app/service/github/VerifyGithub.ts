@@ -7,8 +7,8 @@ import {
 } from 'discord.js';
 import Log from '../../utils/Log';
 import {
-	createOAuthAppAuth,
-} from '@octokit/auth-oauth-app';
+	createAppAuth,
+} from '@octokit/auth-app';
 import apiKeys from '../constants/apiKeys';
 import {
 	OAuthAppAuthInterface,
@@ -61,22 +61,22 @@ const VerifyGithub = async (ctx: CommandContext, guildMember: GuildMember): Prom
 			return;
 		}
 		
-		const auth: OAuthAppAuthInterface = createOAuthAppAuth({
-			clientType: 'oauth-app',
+		const auth: OAuthAppAuthInterface = createAppAuth({
+			appId: apiKeys.GITHUB_APP_ID,
 			clientId: apiKeys.GITHUB_CLIENT_ID,
 			clientSecret: apiKeys.GITHUB_CLIENT_SECRET,
+			privateKey: apiKeys.GITHUB_PRIVATE_KEY,
 		});
-		const options: OAuthAppDeviceFlowAuthOptions = {
+		const userAuth: OAuthAppDeviceFlowAuthOptions = {
 			type: 'oauth-user',
-			scopes: ['write:org'],
 			async onVerification(verification: Verification): Promise<void> {
 				await guildMember.send({ content: `Please enter code \`${verification.user_code}\` on page ${verification.verification_uri}` });
-				Log.debug(verification);
+				Log.debug(`deviceCode: ${verification.device_code}, userCode: ${verification.user_code}, verificationUrl: ${verification.verification_uri}`);
 			},
 		};
 		Log.debug('code entered on github page');
 		
-		const userAuthenticationFromDeviceFlow: OAuthAppAuthentication = await auth(options);
+		const userAuthenticationFromDeviceFlow: OAuthAppAuthentication = await auth(userAuth);
 		verifiedGithub = await retrieveVerifiedGithub(guildMember, userAuthenticationFromDeviceFlow.token);
 		await linkGithubAccount(guildMember, verifiedGithub);
 		

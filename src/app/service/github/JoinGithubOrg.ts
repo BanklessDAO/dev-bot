@@ -5,12 +5,6 @@ import ServiceUtils from '../../utils/ServiceUtils';
 import { Octokit } from '@octokit/rest';
 import { retrieveVerifiedGithub } from './VerifyGithub';
 import constants from '../constants/constants';
-import {
-	AppAuthentication,
-	createOAuthAppAuth,
-} from '@octokit/auth-oauth-app';
-import apiKeys from '../constants/apiKeys';
-import { OAuthAppAuthentication } from '@octokit/oauth-methods/dist-types/types';
 
 export type VerifiedGithub = {
 	accessToken: string,

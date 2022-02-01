@@ -4,9 +4,6 @@
 import {
 	Guild,
 	GuildMember,
-	Message,
-	MessageOptions,
-	TextChannel,
 } from 'discord.js';
 import Log from './Log';
 import client from '../app';
@@ -14,8 +11,6 @@ import {
 	CommandContext,
 	ComponentActionRow,
 	ComponentType,
-	MessageOptions as MessageOptionsSlash,
-	Message as MessageSlash,
 } from 'slash-create';
 
 const ServiceUtils = {
